@@ -1,22 +1,28 @@
-from scrapy.spider import BaseSpider
+from scrapy.contrib.spiders import CrawlSpider, Rule
+from scrapy.contrib.linkextractors.sgml import SgmlLinkExtractor
 from scrapy.selector import HtmlXPathSelector
 
 from cssspy.utils import domains_from_urls
 from cssspy.cssscrapy.items import CssFilesItem
 
 
-class CssSpider(BaseSpider):
+class CssSpider(CrawlSpider):
     name = "css"
+
+    rules = (
+        Rule(SgmlLinkExtractor(allow=()), callback='parse_item', follow=True),
+    )
 
     def __init__(self, urls=None, *args, **kwargs):
         super(CssSpider, self).__init__(*args, **kwargs)
         self.start_urls = urls.split(' ')
         self.allowed_domains = domains_from_urls(*self.start_urls)
 
-    def parse(self, response):
+    def parse_item(self, response):
         hxs = HtmlXPathSelector(response)
-        css_files = hxs.select('//link[@rel="stylesheet"]/@href').extract()
+        css_links = hxs.select('//link[@rel="stylesheet"]/@href').extract()
         item = CssFilesItem()
-        item['page'] = response.url
-        item['css_files'] = css_files
+        item['page_url'] = response.url
+        item['page_body'] = response.body
+        item['css_links'] = css_links
         return item

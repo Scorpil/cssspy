@@ -1,6 +1,7 @@
 from scrapy.item import Item, Field
-from cssspy.utils import CommonEqualityMixin
 
-class CssFilesItem(Item, CommonEqualityMixin):
-    page = Field()
-    css_files = Field()
+
+class CssFilesItem(Item):
+    page_url = Field()
+    page_body = Field()
+    css_links = Field()
