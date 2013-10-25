@@ -10,6 +10,7 @@ from scrapy.contrib.linkextractors.htmlparser import HtmlParserLinkExtractor
 
 class CssSpiderMixin(object):
     name = "css"
+
     def __init__(self, urls=None, *args, **kwargs):
         self.start_urls = urls
         self.allowed_domains = domains_from_urls(*self.start_urls)
@@ -35,6 +36,7 @@ class CssCrawlSpider(CssSpiderMixin, CrawlSpider):
     def __init__(self, *args, **kwargs):
         CrawlSpider.__init__(self, *args, **kwargs)
         CssSpiderMixin.__init__(self, *args, **kwargs)
+
 
 class CssBaseSpider(CssSpiderMixin, BaseSpider):
 

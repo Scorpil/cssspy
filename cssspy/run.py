@@ -31,12 +31,14 @@ def run_crawler(spider, settings):
     crawler.configure()
     crawler.crawl(spider)
     if settings['LOG_ENABLED']:
-        log.start()
+        log.start_from_settings(settings, crawler=crawler)
     crawler.start()
 
 def args_to_settings(args):
     settings = CrawlerSettings(settings_module)
-    settings.overrides['LOG_ENABLED'] = args.debug
+    settings.overrides['LOG_LEVEL'] = args.loglevel
+    settings.overrides['LOG_FILE'] = args.logfile
+    settings.overrides['STATS_DUMP'] = args.stats
     settings.overrides['DEPTH_LIMIT'] = args.max_depth
     settings.overrides['CLOSESPIDER_ITEMCOUNT'] = args.max_pages
     settings.overrides['CLOSESPIDER_TIMEOUT'] = args.timeout
