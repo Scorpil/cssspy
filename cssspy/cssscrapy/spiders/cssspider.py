@@ -1,21 +1,17 @@
 from scrapy.contrib.spiders import CrawlSpider, Rule
-from scrapy.contrib.linkextractors.sgml import SgmlLinkExtractor
+from scrapy.spider import BaseSpider
 from scrapy.selector import HtmlXPathSelector
 
-from cssspy.utils import domains_from_urls
+from cssspy.utils import domains_from_urls, absolute_urls
 from cssspy.cssscrapy.items import CssFilesItem
+from scrapy.contrib.linkextractors.htmlparser import HtmlParserLinkExtractor
 
 
-class CssSpider(CrawlSpider):
+
+class CssSpiderMixin(object):
     name = "css"
-
-    rules = (
-        Rule(SgmlLinkExtractor(allow=()), callback='parse_item', follow=True),
-    )
-
     def __init__(self, urls=None, *args, **kwargs):
-        super(CssSpider, self).__init__(*args, **kwargs)
-        self.start_urls = urls.split(' ')
+        self.start_urls = urls
         self.allowed_domains = domains_from_urls(*self.start_urls)
 
     def parse_item(self, response):
@@ -24,5 +20,27 @@ class CssSpider(CrawlSpider):
         item = CssFilesItem()
         item['page_url'] = response.url
         item['page_body'] = response.body
-        item['css_links'] = css_links
+        item['css_urls'] = absolute_urls(response.url, css_links)
+        item['dead_selectors'] = []
         return item
+
+
+class CssCrawlSpider(CssSpiderMixin, CrawlSpider):
+
+    rules = (
+        Rule(HtmlParserLinkExtractor(), callback='parse_item', follow=True
+         ),
+    )
+
+    def __init__(self, *args, **kwargs):
+        CrawlSpider.__init__(self, *args, **kwargs)
+        CssSpiderMixin.__init__(self, *args, **kwargs)
+
+class CssBaseSpider(CssSpiderMixin, BaseSpider):
+
+    def __init__(self, *args, **kwargs):
+        BaseSpider.__init__(self, *args, **kwargs)
+        CssSpiderMixin.__init__(self, *args, **kwargs)
+
+    def parse(self, response):
+        return self.parse_item(response)

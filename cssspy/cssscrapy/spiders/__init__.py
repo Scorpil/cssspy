@@ -1,1 +1,1 @@
-from .cssspider import CssSpider
+from .cssspider import CssCrawlSpider, CssBaseSpider
